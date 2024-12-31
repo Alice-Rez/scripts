@@ -1,0 +1,57 @@
+#!/bin/bash
+# resize_all_images
+# Resizes all images in a given directory to be under specified size
+#
+# Usage: resize_all_images_below_1MB <directory> <size> <quality>
+#
+# Example: resize_all_images_below_1MB ~/Pictures 2048 85
+#
+
+# Function to display help
+show_help() {
+  echo "Usage: resize_all_images_below_1MB <directory> <size> <quality>"
+  echo "Example: resize_all_images_below_1MB ~/Pictures 2048 85"
+  echo "  <directory>  Directory containing images (default: current directory)"
+  echo "  <size>       Maximum dimension (width or height) in pixels (default: 1536, minimum: 150)"
+  echo "  <quality>    JPEG quality (0-100, default: 85)"
+}
+
+# Check for help option
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  show_help
+  exit 0
+fi
+
+# Validate directory
+directory=${1:-.}
+if [ ! -d "$directory" ]; then
+  echo "Error: Directory $directory does not exist."
+  exit 1
+fi
+
+# Validate size
+size=${2:-1536}
+if ! [[ $size =~ ^[0-9]+$ ]] || [ "$size" -lt 150 ]; then
+  echo "Error: Size must be a positive integer bigger then 150."
+  exit 1
+fi
+
+# Validate quality
+quality=${3:-85}
+if ! [[ $quality =~ ^[0-9]+$ ]] || [ "$quality" -lt 0 ] || [ "$quality" -gt 100 ]; then
+  echo "Error: Quality must be an integer between 0 and 100."
+  exit 1
+fi
+
+cd $directory
+mkdir -p resized
+
+for file in ./*.{jpg,jpeg,png,webp}; do
+	# Skip non-existing files
+	[ -e "$file" ] || continue
+	filename=$(basename "$file")
+	new_filename="${filename%.*}_resized.${filename##*.}"
+	magick $file -resize ${size}x${size}\> -quality $quality ./resized/$new_filename
+done
+
+echo "Resizing completed. Resized images are saved in the 'resized' directory."
