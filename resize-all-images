@@ -46,7 +46,7 @@ fi
 cd $directory
 mkdir -p resized
 
-for file in ./*.{jpg,jpeg,png,webp}; do
+for file in ./*.{jpg,jpeg,png,webp,JPEG,JPEG,PNG,WEBP}; do
 	# Skip non-existing files
 	[ -e "$file" ] || continue
 	filename=$(basename "$file")
